@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#111116">
+  <meta name="description" content="A compact, original turn-based tower RPG built for the browser.">
+  <title>The Hollow Stair — a tiny tower RPG</title>
+  <link rel="stylesheet" href="./style.css">
+  <script type="module" src="./app.js"></script>
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar">
+      <a class="brand" href="./" aria-label="The Hollow Stair home"><span class="brand-mark">HS</span><span>THE HOLLOW STAIR<small>AN ORIGINAL TOWER RPG</small></span></a>
+      <div class="save-state" id="save-state" aria-live="polite">LOCAL SAVE READY</div>
+      <button class="button menu-trigger" id="menu-button" aria-haspopup="dialog">MENU <kbd>BACKSPACE</kbd></button>
+    </header>
+
+    <main>
+      <section class="intro panel">
+        <div class="eyebrow">ONE BLOCK · THIRTY FLOORS</div>
+        <h1>Descend into <em>the quiet.</em></h1>
+        <p>Climb a sealed stairwell, learn each shadow’s weakness, and reach the thing waiting below.</p>
+        <div class="progress-track" aria-label="Tower progress"><div id="progress-fill"></div></div>
+        <div class="progress-copy"><span id="floor-label">FLOOR 01 / 30</span><span id="milestone-label">THE UPPER LANDING</span></div>
+      </section>
+
+      <div class="layout">
+        <section class="main-column">
+          <section class="panel tower-panel" aria-labelledby="tower-heading">
+            <div class="section-heading"><div><span class="eyebrow">THE STAIRWELL</span><h2 id="tower-heading">Floor <span id="floor-number">01</span></h2></div><span class="floor-type" id="floor-type">UNCHARTED</span></div>
+            <div class="game-view"><canvas id="explorer" aria-label="First-person view inside a dark maze. Click to capture the mouse; move with W A S D; press E to swing and start an encounter."></canvas><div class="view-overlay" id="view-overlay"><strong>CLICK TO ENTER</strong><span>WASD MOVE · MOUSE LOOK · E SWING</span></div><div class="view-floor" id="view-floor">FLOOR 01</div></div>
+            <p id="floor-copy" class="floor-copy">A cold draft rises from the darkness. Something stirs beyond the landing.</p>
+            <div class="floor-actions" id="floor-actions">
+              <button class="button button-primary" id="explore">Enter stairwell & capture mouse <span>→</span></button>
+              <button class="button button-quiet hidden" id="cache">Open sealed cache <span>＋</span></button>
+              <button class="button button-primary hidden" id="next-floor">Continue downward <span>↓</span></button>
+            </div>
+          </section>
+
+          <section class="panel battle-panel hidden" id="battle-panel" aria-labelledby="battle-heading">
+            <div class="section-heading"><div><span class="eyebrow">TURN-BASED ENCOUNTER</span><h2 id="battle-heading">The shadows gather</h2></div><span class="round-tag" id="round-tag">ROUND 01</span></div>
+            <div class="enemy-list" id="enemy-list" aria-live="polite"></div>
+            <div class="battle-log" id="battle-log" aria-live="polite"></div>
+            <div class="combat-controls" id="combat-controls">
+              <div class="action-bar">
+                <button class="button action-button" data-action="attack">Attack</button>
+                <button class="button action-button" data-action="skill">Skill</button>
+                <button class="button action-button" data-action="guard">Guard</button>
+                <button class="button action-button" data-action="item">Item</button>
+              </div>
+              <div class="selection-row"><label for="actor-select">Acting member</label><select id="actor-select"></select><label for="target-select">Target</label><select id="target-select"></select></div>
+              <div class="selection-row hidden" id="skill-row"><label for="skill-select">Skill</label><select id="skill-select"></select></div>
+              <div class="selection-row hidden" id="item-row"><label for="item-select">Item</label><select id="item-select"></select></div>
+              <button class="button button-primary hidden" id="perform-action">Confirm action →</button>
+              <button class="button all-out hidden" id="all-out">✦ ALL-OUT ATTACK ✦</button>
+              <p class="combat-hint" id="combat-hint">Choose an action, then select a target.</p>
+            </div>
+            <div class="victory hidden" id="victory"><div class="eyebrow">LANDING CLEARED</div><h3 id="victory-title">The way is open.</h3><p id="victory-copy">The party regains a little strength.</p></div>
+            <div class="shuffle-panel hidden" id="shuffle-panel"><div class="eyebrow">SHUFFLE TIME</div><h3>Choose one reward</h3><div class="shuffle-cards" id="shuffle-cards"></div><p id="shuffle-result" aria-live="polite"></p></div>
+          </section>
+
+          <section class="panel field-notes">
+            <div class="section-heading"><div><span class="eyebrow">FIELD NOTES</span><h2>Read the shadows</h2></div></div>
+            <div class="notes-grid"><div><span class="note-dot dot-weak"></span><strong>Weakness</strong><p>Matching an element knocks a shadow down and grants One More.</p></div><div><span class="note-dot dot-resist"></span><strong>Resistance</strong><p>Resisted elements deal reduced damage. Try another approach.</p></div><div><span class="note-dot dot-status"></span><strong>Ailments</strong><p>Poison, burn, shock, sleep, and fear can change a fight.</p></div></div>
+          </section>
+        </section>
+
+        <aside class="side-column">
+          <section class="panel party-panel"><div class="section-heading"><div><span class="eyebrow">YOUR PARTY</span><h2>Three travelers</h2></div></div><div id="party-list" class="party-list"></div></section>
+          <section class="panel inventory-panel"><div class="section-heading"><div><span class="eyebrow">SUPPLIES</span><h2>Satchel</h2></div></div><div id="inventory-list" class="inventory-list"></div><p class="small-note">Sealed caches wait on floors 5, 10, 20, and 25.</p></section>
+          <section class="panel guide-panel"><span class="eyebrow">THE WAY DOWN</span><div class="milestones"><div><span class="milestone-number">15</span><span>THE BELLKEEPER<small>MINIBOSS</small></span></div><div><span class="milestone-number">30</span><span>MORROW, THE UNLIT<small>FINAL BOSS</small></span></div></div><button class="text-button" id="reset-run">Start a new run</button></section>
+        </aside>
+      </div>
+    </main>
+    <div class="menu-layer hidden" id="menu-layer" role="dialog" aria-modal="true" aria-labelledby="menu-title">
+      <section class="menu-card"><div class="section-heading"><div><span class="eyebrow">PAUSE MENU · SAVE DATA</span><h2 id="menu-title">The field journal</h2></div><button class="button menu-close" id="menu-close" aria-label="Close menu">×</button></div>
+        <div class="menu-columns"><div><button class="button google-placeholder" id="google-login">Continue with Google <span>COMING LATER</span></button><p class="small-note">Google sign-in and cloud save import are placeholders; this version stores progress in your browser.</p><div class="menu-actions"><button class="button" id="export-save">Export save JSON</button><button class="button" id="import-save-button">Import save JSON</button><input class="hidden" id="import-save-file" type="file" accept="application/json,.json"></div><p class="menu-message" id="menu-message" aria-live="polite"></p></div>
+          <div><div class="data-summary" id="data-summary"></div><h3 class="menu-subhead">Switch Personas</h3><div class="persona-switches" id="persona-switches"></div><div class="weapon-list" id="weapon-list"></div></div></div>
+        <button class="button button-quiet" id="menu-resume">Return to game <span>ESC</span></button>
+      </section>
+    </div>
+    <footer>THE HOLLOW STAIR · ORIGINAL FICTION & DESIGN · YOUR PROGRESS STAYS IN THIS BROWSER</footer>
+  </div>
+</body>
+</html>
